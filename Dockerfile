@@ -1,8 +1,13 @@
-FROM        quay.io/prometheus/busybox:latest
-MAINTAINER  Ruben Homs <ruben.homs@wearespindle.com>
+# build
+FROM golang:1.18 as builder
 
-COPY opensips_exporter /bin/opensips_exporter
+WORKDIR /go/src
+COPY . /go/src/
+RUN CGO_ENABLED=0 go build -a -o opensips_exporter
 
-ENTRYPOINT  ["/bin/opensips_exporter"]
-USER        nobody
-EXPOSE      9434
+# run
+FROM alpine
+
+COPY --from=builder /go/src/opensips_exporter /opensips_exporter
+EXPOSE 9434
+ENTRYPOINT [ "/opensips_exporter" ]
