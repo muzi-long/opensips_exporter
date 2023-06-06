@@ -2,18 +2,18 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/VoIPGRID/opensips_exporter/opensips"
 	"github.com/VoIPGRID/opensips_exporter/opensips/jsonrpc"
 	"github.com/VoIPGRID/opensips_exporter/processors"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var o *opensips.OpenSIPS
@@ -111,6 +111,16 @@ func main() {
 	httpEndpoint = strflag("http_address", "http://127.0.0.1:8888/mi/", "Address to query the Management Interface through HTTP with (e.g. http://127.0.0.1:8888/mi/)")
 	protocol = strflag("protocol", "", "Which protocol to use to get data from the Management Interface (mi_datagram & mi_http currently supported)")
 	flag.Parse()
+
+	httpAddress := os.Getenv("HTTP_ADDRESS")
+	if httpAddress != "" {
+		*httpEndpoint = httpAddress
+	}
+
+	httpProtocol := os.Getenv("HTTP_PROTOCOL")
+	if httpProtocol != "" {
+		*protocol = httpProtocol
+	}
 
 	switch *protocol {
 	case "mi_datagram":
